@@ -29,6 +29,7 @@ RUN chmod +x /app/entrypoint.sh && chown 10014:0 /app/entrypoint.sh
 
 # 环境变量：确保 Kuma 知道数据存哪
 ENV DATA_DIR=/app/data/
+ENV UPTIME_KUMA_DB_SSL=true
 
 # 切换到特定的 UID
 USER 10014
