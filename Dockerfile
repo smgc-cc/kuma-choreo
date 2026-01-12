@@ -8,7 +8,7 @@ USER root
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update && apt-get install -y gzip
+RUN apt-get update && apt-get install -y zip unzip
 
 # 从其他镜像复制必要的二进制文件
 COPY --from=ghcr.io/komari-monitor/komari-agent:latest /app/komari-agent /app/komari-agent
