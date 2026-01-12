@@ -1,5 +1,5 @@
 # 基于轻量化的 uptime-kuma:2-slim 镜像
-FROM louislam/uptime-kuma:beta-slim
+FROM louislam/uptime-kuma:2-slim
 
 # 切换回 root 以进行系统级配置
 USER root
