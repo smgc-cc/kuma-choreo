@@ -73,8 +73,37 @@ else
     echo "[Komari] 未配置，跳过。"
 fi
 
+# =========================
+# 3. 首次启动恢复备份
+# =========================
+if [ -n "${WEBDAV_URL:-}" ] && [ ! -f "$DATA_DIR/kuma.db" ]; then
+    echo "[INFO] 首次启动，检查 WebDAV 备份..."
+    bash "/app/restore.sh" || echo "[WARN] 恢复失败或无备份"
+fi
+
+# =========================
+# 4. 备份守护进程
+# =========================
+if [ -n "${WEBDAV_URL:-}" ]; then
+    (
+        while true; do
+            sleep 3600
+            current_date=$(date +"%Y-%m-%d")
+            current_hour=$(date +"%H")
+            LAST_BACKUP_FILE="/tmp/last_backup_date"
+            [ -f "$LAST_BACKUP_FILE" ] && last_backup_date=$(cat "$LAST_BACKUP_FILE") || last_backup_date=""
+            
+            if [ "$current_hour" -eq "${BACKUP_HOUR:-4}" ] && [ "$last_backup_date" != "$current_date" ]; then
+                echo "[INFO] 执行每日备份..."
+                bash "/app/backup.sh" && echo "$current_date" > "$LAST_BACKUP_FILE"
+            fi
+        done
+    ) &
+    echo "✓ 备份守护进程已启动 (每天 ${BACKUP_HOUR:-4}:00)"
+fi
+
 # ==============================
-# 3. 启动主应用
+# 5. 启动主应用
 # ==============================
 echo "[Kuma] 启动主应用..."
 exec node server/server.js
