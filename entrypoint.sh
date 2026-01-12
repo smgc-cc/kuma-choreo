@@ -3,12 +3,27 @@
 # ==============================
 # 环境变量配置与默认值
 # ==============================
+# Komari agent 配置
 KOMARI_SERVER="${KOMARI_SERVER:-}"
 KOMARI_SECRET="${KOMARI_SECRET:-}"
 
-# 赋予默认端口防止 JSON 语法错误
+# sing-box 配置
 SB_PORT=${SB_PORT:-""}
 SB_PASSWD=${SB_PASSWD:-""}
+
+# Webdav 配置
+WEBDAV_URL=${WEBDAV_URL:-}
+WEBDAV_USER=${WEBDAV_USER:-}
+WEBDAV_PASS=${WEBDAV_PASS:-}
+
+# 备份密码（可选，留空则不加密）
+BACKUP_PASS=""
+
+# 每天备份时间（小时，0-23）
+BACKUP_HOUR=4
+
+# 保留备份天数
+KEEP_DAYS=5
 
 # 清理函数的定义
 cleanup() {
@@ -76,7 +91,7 @@ fi
 # =========================
 # 3. 首次启动恢复备份
 # =========================
-if [ -n "${WEBDAV_URL:-}" ] && [ ! -f "$DATA_DIR/kuma.db" ]; then
+if [ -n "$WEBDAV_URL" ] && [ ! -f "$DATA_DIR/kuma.db" ]; then
     echo "[INFO] 首次启动，检查 WebDAV 备份..."
     bash "/app/restore.sh" || echo "[WARN] 恢复失败或无备份"
 fi
@@ -84,7 +99,7 @@ fi
 # =========================
 # 4. 备份守护进程
 # =========================
-if [ -n "${WEBDAV_URL:-}" ]; then
+if [ -n "$WEBDAV_URL" ]; then
     (
         while true; do
             sleep 3600
