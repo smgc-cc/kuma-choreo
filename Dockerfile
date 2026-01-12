@@ -19,7 +19,7 @@ WORKDIR /app
 # 2. 预创建数据目录
 # 3. 统一授权给 10014 和 root 组 (GID 0)
 RUN rm -f /app/extra/healthcheck && \
-    mkdir -p /app/data/upload /app/data/screenshots /app/data/db && \
+    mkdir -p /app/data/upload /app/data/screenshots /app/data/db /app/data/docker-tls && \
     chown -R 10014:0 /app && \
     chmod -R 775 /app
 
