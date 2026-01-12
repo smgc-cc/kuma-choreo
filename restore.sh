@@ -31,7 +31,7 @@ if [ -z "$BACKUP_FILE" ]; then
         -H "Depth: 1" \
         "${WEBDAV_URL}" 2>/dev/null)
     
-    BACKUP_FILE=$(echo "$FILELIST" | grep -oE 'lunes-host-backup-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.zip' | sort -r | head -n1)
+    BACKUP_FILE=$(echo "$FILELIST" | grep -oE 'kuma-backup-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.zip' | sort -r | head -n1)
     
     if [ -z "$BACKUP_FILE" ]; then
         echo "[INFO] 未找到备份文件"
