@@ -133,7 +133,7 @@ jobs:
                   print(f'-> New version found! Updating...')
 
                   # 更新 README - Version
-                  content = re.sub(r'(# Version\s+)(v[\d\.]+)', f'\\g<1>{remote_ver}', content, count=1)
+                  content = re.sub(r'(# Version\s+)(v[\d\.]+)', rf'\g<1>{remote_ver}', content, count=1)
                   # 更新 README - Releases
                   # 这里要小心：写入 README 的应该是原始 Markdown (remote_body)，而不是转义后的 HTML
                   content = re.sub(r'(# Releases\s*)([\s\S]*)', f'# Releases\n\n{remote_body}', content, count=1)
