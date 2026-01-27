@@ -6,7 +6,7 @@ v2.0.1
 
 # Releases
 
-### 🐞 Bug Fixes\r
+### 🐞 Bug Fixes
 
 - #6225 Fix: False positive for Google Chrome during migration
 
