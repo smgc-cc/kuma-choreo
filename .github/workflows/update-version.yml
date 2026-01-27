@@ -49,29 +49,24 @@ jobs:
                   print('::warning::Telegram secrets not set.')
                   return
               
-              # 1. HTML 全局转义
               safe_body = html.escape(body)
-
-              # 2. 链接转换逻辑
               pattern = r'\[([^\]]+)\]\((https?://[^)]+)\)'
               
               def link_replacer(match):
                   text = match.group(1)
                   url = match.group(2)
+                  # 这里使用转义的双引号，防止 Shell 截断
                   return f'<a href=\"{url}\">{text}</a>'
 
               body_with_links = re.sub(pattern, link_replacer, safe_body)
 
-              # 3. 构建消息
               text_content = f'🚀 <b>Kuma (Choreo) Update Detected!</b>\n\n<b>New Version:</b> {version}\n\n{body_with_links}'
               
-              # 4. 截断保护
               if len(text_content) > 4000:
                   text_content = text_content[:4000] + '\n...(content truncated)...'
 
               url = f'https://api.telegram.org/bot{token}/sendMessage'
               
-              # 5. 配置 Payload
               payload = {
                   'chat_id': chat_id,
                   'text': text_content,
@@ -87,7 +82,6 @@ jobs:
                   print(f'-> Telegram notification sent to {chat_id}')
               except Exception as e:
                   print(f'::error::HTML Send Failed: {e}')
-                  # 降级重试逻辑
                   if 'parse_mode' in payload:
                       del payload['parse_mode']
                   payload['text'] = f'Kuma Update: {version}\n\n{body}'
@@ -106,7 +100,7 @@ jobs:
               with open(file_path, 'r', encoding='utf-8') as f:
                   content = f.read()
 
-              # 2. 获取本地版本 (修复点：增加 v? 以匹配没有 v 前缀的版本号)
+              # 2. 获取本地版本
               ver_match = re.search(r'# Version\s+(v?[\d\.]+)', content)
               if not ver_match:
                   print('::warning::Cannot find current version in README format.')
@@ -116,8 +110,11 @@ jobs:
 
               # 3. 获取远程版本
               req = urllib.request.Request(api_url)
-              if os.environ.get('GITHUB_TOKEN'):
-                  req.add_header('Authorization', f'token {os.environ.get("GITHUB_TOKEN")}')
+              
+              # --- 修复点：先把 Token 取出来，避免在 f-string 内部嵌套引号 ---
+              gh_token = os.environ.get('GITHUB_TOKEN')
+              if gh_token:
+                  req.add_header('Authorization', f'token {gh_token}')
               
               with urllib.request.urlopen(req) as response:
                   data = json.loads(response.read().decode())
@@ -129,22 +126,16 @@ jobs:
               if get_semver(remote_ver) > get_semver(local_ver):
                   print(f'-> New version found! Updating...')
 
-                  # 更新 README - Version (修复点：使用 rf 原始字符串 + v? 可选匹配)
-                  # 这里的 \g<1> 会保留 '# Version\n\n' 这种原始格式
                   content = re.sub(r'(# Version\s+)(v?[\d\.]+)', rf'\g<1>{remote_ver}', content, count=1)
-                  
-                  # 更新 README - Releases
                   content = re.sub(r'(# Releases\s*)([\s\S]*)', f'# Releases\n\n{remote_body}', content, count=1)
 
                   with open(file_path, 'w', encoding='utf-8') as f:
                       f.write(content)
                   
-                  # 输出 Output
                   with open(os.environ['GITHUB_OUTPUT'], 'a') as gh_out:
                       gh_out.write('updated=true\n')
                       gh_out.write(f'new_version={remote_ver}\n')
                   
-                  # 发送通知
                   send_telegram(
                       os.environ.get('TELEGRAM_TOKEN'), 
                       os.environ.get('TELEGRAM_TO'), 
